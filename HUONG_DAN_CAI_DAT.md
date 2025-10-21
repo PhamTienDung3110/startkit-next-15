@@ -94,6 +94,22 @@ Dự án **sapt3** là một ứng dụng web được xây dựng bằng Next.j
   - System preference detection
   - Zero flash on page load
 
+### Form Management & Validation
+
+- **react-hook-form (^7.54.2)** - Form library hiệu năng cao cho React
+  - Ít re-render hơn các form library khác
+  - Dễ dàng tích hợp với UI libraries
+  - Built-in validation
+  - TypeScript support tốt
+- **zod (^3.24.1)** - Schema validation library
+  - Type-safe validation
+  - Tự động infer TypeScript types
+  - Dễ đọc, dễ viết
+  - Compose và reuse schemas
+- **@hookform/resolvers (^3.9.1)** - Resolvers cho react-hook-form
+  - Tích hợp react-hook-form với Zod
+  - Hỗ trợ nhiều validation libraries khác (Yup, Joi, etc.)
+
 ### Fonts
 
 - **Geist & Geist Mono** - Font từ Vercel/Next.js
@@ -284,6 +300,14 @@ Kiểm tra code với ESLint.
 - Check tất cả file `.js`, `.jsx`, `.ts`, `.tsx`
 - Max warnings: 0 (không cho phép warnings)
 - Báo lỗi nếu có vi phạm quy tắc
+
+### `npm run lint:fix`
+
+Tự động sửa các lỗi ESLint có thể fix được.
+
+- Check và fix tất cả file `.js`, `.jsx`, `.ts`, `.tsx`
+- Tự động sửa các lỗi đơn giản (unused imports, formatting, etc.)
+- Không sửa được sẽ báo lỗi để fix manual
 
 ### `npm run format`
 
@@ -628,6 +652,178 @@ toast.promise(promise, {
 });
 ```
 
+#### 6. Form Management với React Hook Form + Zod
+
+```bash
+npm install react-hook-form zod @hookform/resolvers
+```
+
+**Bước 1: Tạo Zod Schema**
+
+```typescript
+// lib/validators/profile.ts
+import { z } from "zod";
+
+export const ProfileSchema = z.object({
+  name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
+  email: z.string().email("Email không hợp lệ"),
+  age: z.number().min(18, "Phải từ 18 tuổi trở lên").optional(),
+});
+
+// Tự động infer TypeScript type từ schema
+export type ProfileValues = z.infer<typeof ProfileSchema>;
+```
+
+**Bước 2: Cài đặt Form Component từ shadcn/ui**
+
+```bash
+npx shadcn@latest add form input label
+```
+
+**Bước 3: Tạo Form Component**
+
+```tsx
+// components/forms/DemoForm.tsx
+"use client";
+
+import { zodResolver } from "@hookform/resolvers/zod";
+import { useForm } from "react-hook-form";
+
+import { Button } from "@/components/ui/button";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Input } from "@/components/ui/input";
+import { ProfileSchema, type ProfileValues } from "@/lib/validators/profile";
+
+export function DemoForm() {
+  const form = useForm<ProfileValues>({
+    resolver: zodResolver(ProfileSchema),
+    mode: "onBlur", // Validate khi blur ra ngoài field
+    defaultValues: {
+      name: "",
+      email: "",
+    },
+  });
+
+  async function onSubmit(values: ProfileValues) {
+    // TODO: Gọi API hoặc server action
+    console.log("Form values:", values);
+  }
+
+  return (
+    <Form {...form}>
+      <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+        <FormField
+          control={form.control}
+          name="name"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Tên</FormLabel>
+              <FormControl>
+                <Input placeholder="Nhập tên của bạn" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <FormField
+          control={form.control}
+          name="email"
+          render={({ field }) => (
+            <FormItem>
+              <FormLabel>Email</FormLabel>
+              <FormControl>
+                <Input placeholder="name@example.com" {...field} />
+              </FormControl>
+              <FormMessage />
+            </FormItem>
+          )}
+        />
+
+        <div className="flex gap-2">
+          <Button type="submit" disabled={!form.formState.isValid}>
+            Lưu
+          </Button>
+          <Button type="button" variant="outline" onClick={() => form.reset()}>
+            Reset
+          </Button>
+        </div>
+      </form>
+    </Form>
+  );
+}
+```
+
+**Tính năng:**
+
+- **Type-safe**: TypeScript types được infer tự động từ Zod schema
+- **Validation**: Validate với Zod schema (required, email, min/max, custom rules)
+- **Performance**: React Hook Form ít re-render, hiệu năng cao
+- **UX tốt**: Hiện lỗi realtime, disable button khi invalid
+- **Easy to use**: API đơn giản, dễ học
+
+**Advanced: Validation modes**
+
+```typescript
+useForm({
+  mode: "onBlur", // Validate khi blur (khuyến nghị)
+  // mode: "onChange",     // Validate mỗi khi thay đổi
+  // mode: "onSubmit",     // Chỉ validate khi submit
+  // mode: "onTouched",    // Validate khi touched + change
+  // mode: "all",          // Validate mọi lúc
+});
+```
+
+**Advanced: Complex validation**
+
+```typescript
+// lib/validators/user.ts
+import { z } from "zod";
+
+export const SignupSchema = z
+  .object({
+    username: z.string().min(3).max(20),
+    email: z.string().email(),
+    password: z.string().min(8),
+    confirmPassword: z.string(),
+    terms: z.boolean().refine((val) => val === true, {
+      message: "Bạn phải đồng ý với điều khoản",
+    }),
+  })
+  .refine((data) => data.password === data.confirmPassword, {
+    message: "Mật khẩu không khớp",
+    path: ["confirmPassword"],
+  });
+```
+
+### Xem Demo
+
+Project đã có sẵn trang demo showcase các components và tính năng:
+
+```bash
+# Chạy dev server
+npm run dev
+
+# Truy cập
+http://localhost:3000/demo
+```
+
+Trang demo bao gồm:
+
+- Buttons với nhiều variants và sizes
+- Dark mode toggle
+- Form với React Hook Form + Zod validation
+- Typography showcase
+- Color system
+- Và nhiều hơn nữa...
+
 ### Tạo page mới
 
 1. Tạo folder trong `/app`
@@ -889,7 +1085,7 @@ npx tsc --noEmit
 
 ```bash
 # Fix tự động
-npm run lint -- --fix
+npm run lint:fix
 ```
 
 ---
