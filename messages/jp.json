@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "welcome": "個人財務管理へようこそ",
+    "description": "簡単に収支と目標を追跡できます。"
+  },
+  "Dashboard": {
+    "balance": "現在の残高",
+    "transactions": "最近の取引"
+  }
+}

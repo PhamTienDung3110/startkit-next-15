@@ -3,8 +3,11 @@ import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
 import { ArrowLeft } from "lucide-react";
+import { useTranslations } from "next-intl";
 
 export default function DemoPage() {
+  const t = useTranslations("Home");
+
   return (
     <div className="bg-background min-h-screen p-8">
       <div className="mx-auto max-w-6xl">
@@ -23,6 +26,7 @@ export default function DemoPage() {
               Showcase các components và tính năng có sẵn trong project
             </p>
           </div>
+          {t("welcome")}
           <ThemeToggle />
         </div>
 

@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "welcome": "Welcome to Personal Finance Manager",
+    "description": "Track your income, expenses, and goals easily."
+  },
+  "Dashboard": {
+    "balance": "Current Balance",
+    "transactions": "Recent Transactions"
+  }
+}

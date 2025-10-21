@@ -1,0 +1,10 @@
+{
+  "Home": {
+    "welcome": "Chào mừng đến với Quản lý tài chính cá nhân",
+    "description": "Theo dõi thu chi và mục tiêu của bạn dễ dàng."
+  },
+  "Dashboard": {
+    "balance": "Số dư hiện tại",
+    "transactions": "Giao dịch gần đây"
+  }
+}

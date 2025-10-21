@@ -32,6 +32,11 @@
 - **axios** - HTTP client với interceptors
 - **zod (env validation)** - Type-safe env vars
 
+### Internationalization
+
+- **next-intl** - i18n cho Next.js 15 App Router
+- **Hỗ trợ:** Server & Client Components, ISR, type-safe
+
 ### UI & Icons
 
 - **lucide-react** - 1000+ icons, tree-shakeable
@@ -82,19 +87,29 @@ npm run format        # Prettier format
 
 ```plaintext
 ├── app/                    # App Router (Next.js 15)
-│   ├── demo/              # Demo components page
-│   ├── layout.tsx         # Root layout
-│   └── page.tsx           # Homepage
+│   └── [locale]/          # Dynamic locale routing
+│       ├── demo/          # Demo components page
+│       ├── dashboard/     # Dashboard page
+│       ├── layout.tsx     # Root layout
+│       └── page.tsx       # Homepage
 ├── components/
 │   ├── forms/             # Form components
 │   ├── providers/         # ThemeProvider, etc.
 │   └── ui/                # shadcn/ui components
+├── i18n/
+│   └── request.ts         # next-intl request config
 ├── lib/
 │   ├── validators/        # Zod schemas
 │   └── utils.ts           # cn() helper
+├── messages/              # i18n translations
+│   ├── vi.json           # Tiếng Việt
+│   ├── en.json           # English
+│   └── jp.json           # 日本語
 ├── views/                 # Complex views/pages
 │   └── dashboard/         # Dashboard components
 ├── public/                # Static files
+├── i18n.ts                # Locale config
+├── middleware.ts          # next-intl middleware
 ├── env.mjs                # Type-safe env validation
 └── tsconfig.json          # TS config với @/* paths
 ```
@@ -219,7 +234,218 @@ export function DemoForm() {
 }
 ```
 
-### 5. HTTP Client với Axios
+### 5. Internationalization (i18n) với next-intl
+
+**Cài đặt:**
+
+```bash
+npm install next-intl
+```
+
+**Cấu trúc thư mục:**
+
+```plaintext
+├── i18n.ts                    # Locale config
+├── middleware.ts              # Routing middleware
+├── i18n/
+│   └── request.ts            # Request config
+├── messages/
+│   ├── vi.json               # Tiếng Việt
+│   ├── en.json               # English
+│   └── jp.json               # 日本語
+└── app/
+    └── [locale]/             # Dynamic locale route
+        ├── layout.tsx
+        └── page.tsx
+```
+
+**1. Config locales (i18n.ts):**
+
+```tsx
+export const locales = ["vi", "en", "jp"] as const;
+export const defaultLocale = "vi";
+
+export type Locale = (typeof locales)[number];
+```
+
+**2. Setup Middleware (middleware.ts):**
+
+```tsx
+import createMiddleware from "next-intl/middleware";
+import { locales, defaultLocale } from "./i18n";
+
+export default createMiddleware({
+  locales,
+  defaultLocale,
+  localePrefix: "always", // URL luôn có prefix /vi, /en
+});
+
+export const config = {
+  matcher: ["/((?!api|_next|.*\\..*).*)"],
+};
+```
+
+**3. Request Config (i18n/request.ts):**
+
+```tsx
+import { getRequestConfig } from "next-intl/server";
+import { locales, Locale } from "@/i18n";
+
+export default getRequestConfig(async ({ requestLocale }) => {
+  let locale = await requestLocale;
+
+  // Ensure that a valid locale is used
+  if (!locale || !locales.includes(locale as Locale)) {
+    locale = "vi";
+  }
+
+  return {
+    locale,
+    messages: (await import(`@/messages/${locale}.json`)).default,
+  };
+});
+```
+
+**4. Next.js Config (next.config.ts):**
+
+```tsx
+import type { NextConfig } from "next";
+import createNextIntlPlugin from "next-intl/plugin";
+
+const withNextIntl = createNextIntlPlugin("./i18n/request.ts");
+
+const nextConfig: NextConfig = {
+  /* config options here */
+};
+
+export default withNextIntl(nextConfig);
+```
+
+**5. Layout (app/[locale]/layout.tsx):**
+
+```tsx
+import { Locale, locales } from "@/i18n";
+import { notFound } from "next/navigation";
+
+export function generateStaticParams() {
+  return locales.map((locale) => ({ locale: locale as string }));
+}
+
+export default async function RootLayout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: Promise<{ locale: string }>;
+}) {
+  const { locale } = await params;
+  if (!locales.includes(locale as Locale)) notFound();
+
+  return (
+    <html lang={locale}>
+      <body>{children}</body>
+    </html>
+  );
+}
+```
+
+**6. Messages (messages/vi.json):**
+
+```json
+{
+  "Home": {
+    "welcome": "Chào mừng đến với Quản lý tài chính cá nhân",
+    "description": "Theo dõi thu chi và mục tiêu của bạn dễ dàng."
+  },
+  "Dashboard": {
+    "balance": "Số dư hiện tại",
+    "transactions": "Giao dịch gần đây"
+  }
+}
+```
+
+**7. Sử dụng trong Server Component:**
+
+```tsx
+import { useTranslations } from "next-intl";
+
+export default function HomePage() {
+  const t = useTranslations("Home");
+
+  return (
+    <div>
+      <h1>{t("welcome")}</h1>
+      <p>{t("description")}</p>
+    </div>
+  );
+}
+```
+
+**8. Sử dụng trong Client Component:**
+
+```tsx
+"use client";
+import { useTranslations } from "next-intl";
+
+export function WelcomeCard() {
+  const t = useTranslations("Home");
+
+  return <div>{t("welcome")}</div>;
+}
+```
+
+**9. Navigation với locale:**
+
+```tsx
+import { Link } from "@/i18n/routing"; // Hoặc next/link với prefix
+
+// next/link (thủ công)
+<Link href="/vi/dashboard">Dashboard</Link>;
+
+// useRouter với locale
+import { useRouter } from "next/navigation";
+const router = useRouter();
+router.push("/dashboard"); // Tự động thêm locale prefix
+```
+
+**10. Chuyển đổi ngôn ngữ:**
+
+```tsx
+"use client";
+import { usePathname, useRouter } from "next/navigation";
+import { locales } from "@/i18n";
+
+export function LanguageSwitcher() {
+  const pathname = usePathname();
+  const router = useRouter();
+
+  const switchLocale = (newLocale: string) => {
+    const segments = pathname.split("/");
+    segments[1] = newLocale; // Thay locale
+    router.push(segments.join("/"));
+  };
+
+  return (
+    <select onChange={(e) => switchLocale(e.target.value)}>
+      {locales.map((locale) => (
+        <option key={locale} value={locale}>
+          {locale.toUpperCase()}
+        </option>
+      ))}
+    </select>
+  );
+}
+```
+
+**📌 Lưu ý:**
+
+- ✅ **App Router only** - next-intl v3+ chỉ hỗ trợ App Router
+- ✅ **ISR support** - Messages được cache tự động
+- ✅ **Type-safe** - TypeScript infer keys từ JSON
+- ✅ **SEO-friendly** - Mỗi locale có URL riêng (`/vi`, `/en`, `/jp`)
+- ✅ **Server & Client** - `useTranslations()` hoạt động ở cả 2 nơi
+
+### 6. HTTP Client với Axios
 
 ```bash
 npm install axios
@@ -258,7 +484,7 @@ import { api } from "@/lib/axios";
 const { data } = await api.get("/users");
 ```
 
-### 6. Environment Variables (Type-safe)
+### 7. Environment Variables (Type-safe)
 
 ```tsx
 // env.mjs
@@ -294,7 +520,7 @@ import { env } from "@/env.mjs";
 const url = env.NEXT_PUBLIC_API_URL; // ✅ Type-safe
 ```
 
-### 7. Charts với Recharts
+### 8. Charts với Recharts
 
 ```bash
 npm install recharts
@@ -323,7 +549,7 @@ export function Chart() {
 }
 ```
 
-### 8. Data Tables với TanStack Table
+### 9. Data Tables với TanStack Table
 
 ```bash
 npm install @tanstack/react-table
@@ -378,7 +604,7 @@ export function DataTable({ data }: { data: User[] }) {
 }
 ```
 
-### 9. Drag & Drop với dnd-kit
+### 10. Drag & Drop với dnd-kit
 
 ```bash
 npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
@@ -479,31 +705,29 @@ npm run lint:fix
 
 ---
 
-## 📚 Tài liệu
+## 📚 Tài liệu tham khảo
 
-### Core
+**Core Framework:**
 
 - [Next.js](https://nextjs.org/docs) | [React](https://react.dev) | [TypeScript](https://typescriptlang.org)
 
-### Styling
+**Styling & UI:**
 
 - [Tailwind CSS v4](https://tailwindcss.com) | [shadcn/ui](https://ui.shadcn.com)
-
-### Icons & UI
-
 - [Lucide](https://lucide.dev) | [Tabler Icons](https://tabler.io/icons) | [Radix UI](https://radix-ui.com)
 
-### Charts & Tables
+**Data & Visualization:**
 
 - [Recharts](https://recharts.org) | [TanStack Table](https://tanstack.com/table)
-
-### DnD
-
 - [dnd kit](https://docs.dndkit.com)
 
-### Data & Forms
+**Forms & HTTP:**
 
 - [Axios](https://axios-http.com) | [React Hook Form](https://react-hook-form.com) | [Zod](https://zod.dev)
+
+**i18n:**
+
+- [next-intl](https://next-intl-docs.vercel.app)
 
 ---
 
@@ -515,7 +739,9 @@ npm run lint:fix
 - ✅ `suppressHydrationWarning` bắt buộc cho next-themes
 - ✅ ESLint max warnings = 0
 - ✅ shadcn/ui copy components, không install từ npm
-- ✅ Xem demo: `npm run dev` → `http://localhost:3000/demo`
+- ✅ **next-intl** - i18n với App Router, hỗ trợ 3 ngôn ngữ (vi, en, jp)
+- ✅ **Locale routing** - URL format: `/vi/*`, `/en/*`, `/jp/*`
+- ✅ Xem demo: `npm run dev` → `http://localhost:3000/vi` hoặc `/en`, `/jp`
 
-**Version:** 1.0.0  
+**Version:** 1.1.0  
 **Last Updated:** 2025-01-21
