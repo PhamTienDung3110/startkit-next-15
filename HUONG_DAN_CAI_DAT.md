@@ -53,6 +53,11 @@
 - **@dnd-kit/sortable** - Sortable lists/grids
 - **@dnd-kit/utilities** - CSS transforms helpers
 
+### State Management
+
+- **zustand 5.x** - Lightweight state management (~1KB)
+- **Chỉ cho non-SEO pages** - Dashboard, Admin, Settings
+
 ### Code Quality
 
 - **ESLint 9.x** + **Prettier 3.6.2** + **Tailwind plugin**
@@ -90,12 +95,24 @@ npm run format        # Prettier format
 │   └── [locale]/          # Dynamic locale routing
 │       ├── demo/          # Demo components page
 │       ├── dashboard/     # Dashboard page
-│       ├── layout.tsx     # Root layout
-│       └── page.tsx       # Homepage
+│       │   ├── data.json # Dashboard data
+│       │   └── page.tsx  # Dashboard page
+│       ├── layout.tsx     # Root layout (với sidebar & header)
+│       ├── page.tsx       # Homepage
+│       └── globals.css    # Global styles
 ├── components/
 │   ├── forms/             # Form components
 │   ├── providers/         # ThemeProvider, etc.
-│   └── ui/                # shadcn/ui components
+│   └── ui/                # shadcn/ui components (sidebar, collapsible, etc.)
+├── constants/             # App constants
+│   ├── sidebar.ts        # Sidebar navigation data
+│   ├── metadata.ts       # SEO metadata config
+│   └── index.ts          # Barrel export
+├── stores/               # Zustand state management
+│   ├── ui-store.ts      # UI states (sidebar, modals)
+│   ├── user-store.ts    # User session & preferences
+│   ├── dashboard-store.ts # Dashboard filters
+│   └── index.ts         # Barrel export
 ├── i18n/
 │   └── request.ts         # next-intl request config
 ├── lib/
@@ -106,7 +123,18 @@ npm run format        # Prettier format
 │   ├── en.json           # English
 │   └── jp.json           # 日本語
 ├── views/                 # Complex views/pages
-│   └── dashboard/         # Dashboard components
+│   ├── dashboard/         # Dashboard components
+│   │   ├── chart-area-interactive.tsx
+│   │   ├── data-table.tsx
+│   │   ├── section-cards.tsx
+│   │   └── site-header.tsx
+│   └── sidebar/           # Sidebar components
+│       ├── app-sidebar.tsx      # Main sidebar
+│       ├── nav-main.tsx         # Main nav với sub-items
+│       ├── nav-documents.tsx    # Documents nav
+│       ├── nav-secondary.tsx    # Secondary nav
+│       ├── nav-user.tsx         # User menu
+│       └── index.tsx            # Barrel export
 ├── public/                # Static files
 ├── i18n.ts                # Locale config
 ├── middleware.ts          # next-intl middleware
@@ -604,7 +632,205 @@ export function DataTable({ data }: { data: User[] }) {
 }
 ```
 
-### 10. Drag & Drop với dnd-kit
+### 10. Sidebar với shadcn/ui
+
+**Cài đặt Collapsible:**
+
+```bash
+npx shadcn@latest add collapsible
+```
+
+**Cấu trúc Sidebar:**
+
+```plaintext
+views/sidebar/
+├── app-sidebar.tsx       # Main sidebar component
+├── nav-main.tsx          # Main navigation (có sub-items)
+├── nav-documents.tsx     # Documents navigation
+├── nav-secondary.tsx     # Secondary navigation
+├── nav-user.tsx          # User profile menu
+└── index.tsx            # Barrel export
+
+constants/
+└── sidebar.ts           # Sidebar data (menu items, user, etc.)
+```
+
+**Data Constants (constants/sidebar.ts):**
+
+```tsx
+import {
+  IconDashboard,
+  IconListDetails,
+  IconChartBar,
+  // ... other icons
+} from "@tabler/icons-react";
+
+export const sidebarData = {
+  user: {
+    name: "shadcn",
+    email: "m@example.com",
+    avatar: "/avatars/shadcn.jpg",
+  },
+  navMain: [
+    {
+      title: "Dashboard",
+      url: "#",
+      icon: IconDashboard,
+      isActive: true,
+      items: [
+        { title: "Overview", url: "#" },
+        { title: "Analytics", url: "#" },
+        { title: "Reports", url: "#" },
+      ],
+    },
+    // ... more items
+  ],
+  navSecondary: [
+    { title: "Settings", url: "#", icon: IconSettings },
+    { title: "Get Help", url: "#", icon: IconHelp },
+  ],
+};
+```
+
+**Usage trong Layout:**
+
+```tsx
+// app/[locale]/layout.tsx
+import { AppSidebar } from "@/views/sidebar";
+import { SiteHeader } from "@/views/dashboard/site-header";
+import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
+
+export default async function RootLayout({ children, params }) {
+  return (
+    <html>
+      <body>
+        <SidebarProvider>
+          <AppSidebar variant="inset" />
+          <SidebarInset>
+            <SiteHeader />
+            {children}
+          </SidebarInset>
+        </SidebarProvider>
+      </body>
+    </html>
+  );
+}
+```
+
+**Nav với Sub-items (nav-main.tsx):**
+
+```tsx
+import { Collapsible, CollapsibleContent, CollapsibleTrigger } from "@/components/ui/collapsible";
+import { IconChevronRight } from "@tabler/icons-react";
+
+export function NavMain({ items }) {
+  return (
+    <SidebarMenu>
+      {items.map((item) => (
+        <Collapsible key={item.title} defaultOpen={item.isActive}>
+          <SidebarMenuItem>
+            <CollapsibleTrigger asChild>
+              <SidebarMenuButton>
+                {item.icon && <item.icon />}
+                <span>{item.title}</span>
+                {item.items && <IconChevronRight className="ml-auto" />}
+              </SidebarMenuButton>
+            </CollapsibleTrigger>
+            {item.items && (
+              <CollapsibleContent>
+                <SidebarMenuSub>
+                  {item.items.map((subItem) => (
+                    <SidebarMenuSubItem key={subItem.title}>
+                      <SidebarMenuSubButton asChild>
+                        <a href={subItem.url}>{subItem.title}</a>
+                      </SidebarMenuSubButton>
+                    </SidebarMenuSubItem>
+                  ))}
+                </SidebarMenuSub>
+              </CollapsibleContent>
+            )}
+          </SidebarMenuItem>
+        </Collapsible>
+      ))}
+    </SidebarMenu>
+  );
+}
+```
+
+**📌 Lưu ý:**
+
+- ✅ **Font size** - Sidebar sử dụng font size 15px cho dễ đọc
+- ✅ **Collapsible** - Items có thể mở/đóng với animation mượt
+- ✅ **Centralized Data** - Tất cả data trong `constants/sidebar.ts`
+- ✅ **Type-safe** - Full TypeScript support
+- ✅ **Responsive** - Tự động chuyển sang mobile drawer
+
+### 11. State Management với Zustand
+
+Zustand đã được cài sẵn trong project.
+
+⚠️ **Chỉ dùng cho non-SEO pages** (Dashboard/Admin)
+
+**Sử dụng cho:**
+
+- UI state (sidebar, modals, theme)
+- User preferences & session
+- Dashboard filters & view modes
+
+**Stores có sẵn:**
+
+```plaintext
+stores/
+├── ui-store.ts         # Sidebar, modals, UI states
+├── user-store.ts       # User session, preferences
+└── dashboard-store.ts  # Dashboard filters, sorting
+```
+
+**Example - UI Store:**
+
+```tsx
+"use client";
+import { useUIStore } from "@/stores";
+
+export function MySidebar() {
+  const { sidebarCollapsed, toggleSidebar } = useUIStore();
+
+  return (
+    <aside className={sidebarCollapsed ? "collapsed" : "expanded"}>
+      <button onClick={toggleSidebar}>Toggle</button>
+    </aside>
+  );
+}
+```
+
+**Example - Dashboard Store:**
+
+```tsx
+"use client";
+import { useDashboardStore } from "@/stores";
+
+export function DashboardFilters() {
+  const { selectedCategory, setCategory, resetFilters } = useDashboardStore();
+
+  return (
+    <div>
+      <select value={selectedCategory} onChange={(e) => setCategory(e.target.value)}>
+        <option value="all">All</option>
+        <option value="active">Active</option>
+      </select>
+      <button onClick={resetFilters}>Reset</button>
+    </div>
+  );
+}
+```
+
+**📌 Rule quan trọng:**
+
+- ✅ **Dashboard, Settings, Admin** → Zustand OK
+- ❌ **Homepage, Blog, Product** → Server Component + fetch() (cho SEO)
+- 💡 **Tại sao?** SEO pages cần HTML đầy đủ ngay từ đầu cho Google bot
+
+### 12. Drag & Drop với dnd-kit
 
 ```bash
 npm install @dnd-kit/core @dnd-kit/sortable @dnd-kit/utilities
@@ -741,7 +967,11 @@ npm run lint:fix
 - ✅ shadcn/ui copy components, không install từ npm
 - ✅ **next-intl** - i18n với App Router, hỗ trợ 3 ngôn ngữ (vi, en, jp)
 - ✅ **Locale routing** - URL format: `/vi/*`, `/en/*`, `/jp/*`
+- ✅ **Sidebar** - shadcn/ui sidebar với collapsible sub-items (font 15px)
+- ✅ **Constants** - Centralized data trong `constants/`
+- ✅ **Zustand** - State management cho non-SEO pages (Dashboard/Admin)
+- ✅ **Clean Architecture** - Tách biệt views/sidebar & views/dashboard
 - ✅ Xem demo: `npm run dev` → `http://localhost:3000/vi` hoặc `/en`, `/jp`
 
-**Version:** 1.1.0  
-**Last Updated:** 2025-01-21
+**Version:** 1.3.0  
+**Last Updated:** 2025-01-23

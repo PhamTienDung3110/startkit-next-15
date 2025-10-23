@@ -1,28 +1,61 @@
 {
   "compilerOptions": {
+    // Type definitions cho Tabler Icons
     "types": ["@tabler/icons-react"],
+
+    // Target ES2017 cho compatibility tốt
     "target": "ES2017",
+
+    // Libraries cần thiết cho React + Next.js
     "lib": ["dom", "dom.iterable", "esnext"],
+
+    // Cho phép import .js files
     "allowJs": true,
+
+    // Skip type checking cho node_modules (faster build)
     "skipLibCheck": true,
+
+    // Strict mode - TypeScript nghiêm ngặt hơn
     "strict": true,
+
+    // Không emit files (Next.js tự handle)
     "noEmit": true,
+
+    // Enable ES module interop
     "esModuleInterop": true,
+
+    // Module resolution cho Next.js
     "module": "esnext",
     "moduleResolution": "bundler",
+
+    // Cho phép import JSON files
     "resolveJsonModule": true,
+
+    // Isolated modules cho faster transpilation
     "isolatedModules": true,
+
+    // JSX transform (preserve cho Next.js)
     "jsx": "preserve",
+
+    // Incremental compilation cho faster builds
     "incremental": true,
+
+    // Next.js TypeScript plugin
     "plugins": [
       {
         "name": "next"
       }
     ],
+
+    // Path aliases - @/* = root directory
     "paths": {
       "@/*": ["./*"]
     }
   },
+
+  // Files được include vào TypeScript checking
   "include": ["next-env.d.ts", "**/*.ts", "**/*.tsx", ".next/types/**/*.ts"],
+
+  // Exclude node_modules
   "exclude": ["node_modules"]
 }
