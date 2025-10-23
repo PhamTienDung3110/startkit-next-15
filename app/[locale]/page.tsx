@@ -1,20 +1,41 @@
+/**
+ * Homepage
+ * 
+ * @description Landing page cho StartKit với:
+ * - Hero section
+ * - Features showcase
+ * - Tech stack badges
+ * - CTA buttons
+ * 
+ * SEO: Server Component (có thể add generateMetadata nếu cần)
+ */
+
 import { ThemeToggle } from "@/components/theme-toggle";
 import { Button } from "@/components/ui/button";
 import Link from "next/link";
-import { Palette, FileText, Github, Rocket } from "lucide-react";
+import { Palette, FileText, Github, Rocket, LayoutDashboard } from "lucide-react";
 
 export default function Home() {
   return (
     <div className="from-background to-muted/20 min-h-screen bg-gradient-to-b">
-      {/* Header */}
+      {/* Header Navigation */}
       <header className="bg-background/95 supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50 w-full border-b backdrop-blur">
         <div className="container flex h-16 items-center justify-between">
+          {/* Logo/Brand */}
           <div className="flex items-center gap-2">
             <Rocket className="h-6 w-6" />
             <span className="text-xl font-bold">StartKit Next.js</span>
           </div>
+          
+          {/* Navigation Links */}
           <nav className="flex items-center gap-4">
-            <Link href="/demo">
+            <Link href="dashboard">
+              <Button variant="ghost" className="gap-2">
+                <LayoutDashboard className="h-4 w-4" />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="demo">
               <Button variant="ghost">Demo</Button>
             </Link>
             <ThemeToggle />
@@ -32,14 +53,21 @@ export default function Home() {
             Template hiện đại với Next.js 15, TypeScript, Tailwind CSS v4, shadcn/ui và nhiều hơn
             nữa
           </p>
+          {/* CTA Buttons */}
           <div className="flex flex-wrap justify-center gap-4">
-            <Link href="/demo">
+            <Link href="dashboard">
               <Button size="lg" className="gap-2">
+                <LayoutDashboard className="h-5 w-5" />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="demo">
+              <Button size="lg" variant="outline" className="gap-2">
                 <Palette className="h-5 w-5" />
                 Xem Demo
               </Button>
             </Link>
-            <Link href="https://github.com" target="_blank">
+            <Link href="https://github.com" target="_blank" rel="noopener noreferrer">
               <Button size="lg" variant="outline" className="gap-2">
                 <Github className="h-5 w-5" />
                 GitHub
@@ -165,18 +193,21 @@ export default function Home() {
           </div>
         </div>
 
-        {/* Tech Stack */}
+        {/* Tech Stack Section - Showcase technologies used */}
         <div className="mx-auto mt-24 max-w-4xl">
           <h2 className="mb-8 text-center text-3xl font-bold">Tech Stack</h2>
           <div className="flex flex-wrap justify-center gap-4">
+            {/* Tech badges - auto render từ array */}
             {[
               "Next.js 15",
               "React 19",
               "TypeScript",
               "Tailwind CSS v4",
               "shadcn/ui",
+              "next-intl",
               "React Hook Form",
               "Zod",
+              "Zustand",
               "Lucide Icons",
               "next-themes",
               "ESLint",
@@ -196,14 +227,22 @@ export default function Home() {
         <div className="bg-card mx-auto mt-24 max-w-2xl rounded-lg border p-8 text-center">
           <h2 className="mb-4 text-3xl font-bold">Sẵn sàng bắt đầu?</h2>
           <p className="text-muted-foreground mb-6">
-            Xem demo để khám phá các components và tính năng có sẵn
+            Xem Dashboard hoặc Demo để khám phá các tính năng
           </p>
-          <Link href="/demo">
-            <Button size="lg" className="gap-2">
-              <Rocket className="h-5 w-5" />
-              Khám phá Demo
-            </Button>
-          </Link>
+          <div className="flex justify-center gap-4">
+            <Link href="dashboard">
+              <Button size="lg" className="gap-2">
+                <LayoutDashboard className="h-5 w-5" />
+                Dashboard
+              </Button>
+            </Link>
+            <Link href="demo">
+              <Button size="lg" variant="outline" className="gap-2">
+                <Rocket className="h-5 w-5" />
+                Xem Demo
+              </Button>
+            </Link>
+          </div>
         </div>
       </main>
 
@@ -211,11 +250,14 @@ export default function Home() {
       <footer className="border-t py-8">
         <div className="text-muted-foreground container text-center text-sm">
           <p>
-            Đọc{" "}
-            <Link href="#" className="hover:text-foreground underline">
-              HUONG_DAN_CAI_DAT.md
-            </Link>{" "}
-            để biết thêm chi tiết
+            Xem thêm:{" "}
+            <Link href="dashboard" className="hover:text-foreground underline">
+              Dashboard
+            </Link>
+            {" · "}
+            <Link href="demo" className="hover:text-foreground underline">
+              Demo Components
+            </Link>
           </p>
         </div>
       </footer>

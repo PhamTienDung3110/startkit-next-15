@@ -73,21 +73,21 @@ export const sidebarData = {
   navMain: [
     {
       title: "Dashboard",
-      url: "#",
+      url: "/dashboard", // TODO: Update với real routes
       icon: IconDashboard,
       isActive: true,
       items: [
         {
           title: "Overview",
-          url: "#",
+          url: "/dashboard", // Main dashboard page
         },
         {
           title: "Analytics",
-          url: "#",
+          url: "/dashboard/analytics", // TODO: Tạo page này
         },
         {
           title: "Reports",
-          url: "#",
+          url: "/dashboard/reports", // TODO: Tạo page này
         },
       ],
     },
@@ -179,17 +179,17 @@ export const sidebarData = {
   navSecondary: [
     {
       title: "Settings",
-      url: "#",
+      url: "/settings", // TODO: Tạo settings page
       icon: IconSettings,
     },
     {
       title: "Get Help",
-      url: "#",
+      url: "/help", // TODO: Tạo help page hoặc link external
       icon: IconHelp,
     },
     {
       title: "Search",
-      url: "#",
+      url: "#", // Search thường mở modal, không navigate
       icon: IconSearch,
     },
   ],
