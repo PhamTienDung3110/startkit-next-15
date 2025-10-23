@@ -1,11 +1,11 @@
 /**
  * Secondary Navigation Component
- * 
+ *
  * @description Navigation phụ (Settings, Help, Search)
  * - Thường đặt ở bottom của sidebar (dùng mt-auto)
  * - Single-level menu (không có sub-items)
  * - Auto-detect active route
- * 
+ *
  * Data source: constants/sidebar.ts (sidebarData.navSecondary)
  */
 
@@ -36,7 +36,7 @@ export function NavSecondary({
 } & React.ComponentPropsWithoutRef<typeof SidebarGroup>) {
   // Lấy pathname để detect active route
   const pathname = usePathname();
-  
+
   return (
     <SidebarGroup {...props}>
       <SidebarGroupContent>
@@ -44,7 +44,7 @@ export function NavSecondary({
           {items.map((item) => {
             // Check active state
             const isActive = pathname.includes(item.url) && item.url !== "#";
-            
+
             return (
               <SidebarMenuItem key={item.title}>
                 <SidebarMenuButton asChild isActive={isActive}>

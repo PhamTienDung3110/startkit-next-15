@@ -1,12 +1,12 @@
 /**
  * Homepage
- * 
+ *
  * @description Landing page cho StartKit với:
  * - Hero section
  * - Features showcase
  * - Tech stack badges
  * - CTA buttons
- * 
+ *
  * SEO: Server Component (có thể add generateMetadata nếu cần)
  */
 
@@ -26,7 +26,7 @@ export default function Home() {
             <Rocket className="h-6 w-6" />
             <span className="text-xl font-bold">StartKit Next.js</span>
           </div>
-          
+
           {/* Navigation Links */}
           <nav className="flex items-center gap-4">
             <Link href="dashboard">

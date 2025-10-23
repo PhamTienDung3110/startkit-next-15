@@ -1,11 +1,11 @@
 /**
  * Documents Navigation Component
- * 
+ *
  * @description Quick access links cho documents/tools
  * - Có dropdown menu với actions (Share, Move, Delete)
  * - Auto-detect active route
  * - Ẩn khi sidebar collapsed (icon mode)
- * 
+ *
  * Data source: constants/sidebar.ts (sidebarData.documents)
  */
 
@@ -51,7 +51,7 @@ export function NavDocuments({
         {items.map((item) => {
           // Check active state
           const isActive = pathname.includes(item.url) && item.url !== "#";
-          
+
           return (
             <SidebarMenuItem key={item.name}>
               <SidebarMenuButton asChild isActive={isActive}>
@@ -60,7 +60,7 @@ export function NavDocuments({
                   <span>{item.name}</span>
                 </Link>
               </SidebarMenuButton>
-              
+
               {/* Dropdown Menu - Actions cho document item */}
               <DropdownMenu>
                 <DropdownMenuTrigger asChild>
@@ -93,7 +93,7 @@ export function NavDocuments({
             </SidebarMenuItem>
           );
         })}
-        
+
         {/* More Documents Button */}
         <SidebarMenuItem>
           <SidebarMenuButton className="text-sidebar-foreground/70">

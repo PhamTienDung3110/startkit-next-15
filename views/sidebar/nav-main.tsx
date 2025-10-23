@@ -1,13 +1,13 @@
 /**
  * Main Navigation Component
- * 
+ *
  * @description Navigation chính của sidebar với collapsible sub-items
  * - Support multi-level menu (parent + children)
  * - Collapsible với animation mượt
  * - Icon chevron rotate khi mở/đóng
  * - Auto-detect active route và highlight
  * - Quick Create button ở top
- * 
+ *
  * Data source: constants/sidebar.ts (sidebarData.navMain)
  */
 
@@ -57,7 +57,7 @@ export function NavMain({
   // Lấy pathname hiện tại để detect active route
   // pathname = "/vi/dashboard" hoặc "/en/dashboard", etc.
   const pathname = usePathname();
-  
+
   return (
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
@@ -72,7 +72,7 @@ export function NavMain({
               <IconCirclePlusFilled />
               <span>Quick Create</span>
             </SidebarMenuButton>
-            
+
             {/* Inbox Button - Secondary action */}
             <Button
               size="icon"
@@ -84,14 +84,14 @@ export function NavMain({
             </Button>
           </SidebarMenuItem>
         </SidebarMenu>
-        
+
         {/* Main Navigation Items - với Collapsible sub-items */}
         <SidebarMenu>
           {items.map((item) => {
             // Check active: pathname bao gồm item.url
             // VD: pathname="/vi/dashboard" includes "/dashboard" → active
             const isActive = pathname.includes(item.url) && item.url !== "#";
-            
+
             return (
               <Collapsible
                 key={item.title}
@@ -111,7 +111,7 @@ export function NavMain({
                       )}
                     </SidebarMenuButton>
                   </CollapsibleTrigger>
-                  
+
                   {/* Sub-items - Chỉ render nếu có items */}
                   {item.items?.length ? (
                     <CollapsibleContent>
@@ -119,7 +119,7 @@ export function NavMain({
                         {item.items.map((subItem) => {
                           // Check active cho sub-item
                           const isSubActive = pathname.includes(subItem.url) && subItem.url !== "#";
-                          
+
                           return (
                             <SidebarMenuSubItem key={subItem.title}>
                               <SidebarMenuSubButton asChild isActive={isSubActive}>
