@@ -1,14 +1,13 @@
 /**
  * Root Layout - Locale-specific
  *
- * @description Layout chính cho toàn bộ app với i18n support
+ * @description Layout chung cho toàn bộ app với i18n support
  * - Wrapped trong [locale] folder → dynamic routing (/vi, /en, /jp)
- * - Chứa Sidebar + Header cho tất cả pages
- * - ThemeProvider cho dark mode
- * - Toaster cho notifications
+ * - Chỉ chứa ThemeProvider, Toaster và i18n setup
+ * - Không có Sidebar/Header (được xử lý bởi route groups)
  *
  * Structure:
- * html → body → ThemeProvider → SidebarProvider → AppSidebar + SiteHeader + {children}
+ * html → body → ThemeProvider → {children}
  */
 
 import type { Metadata } from "next";
@@ -18,10 +17,9 @@ import { ThemeProvider } from "@/components/providers/ThemeProvider";
 import { Toaster } from "sonner";
 import { Locale, locales } from "@/i18n";
 import { notFound } from "next/navigation";
-import { AppSidebar } from "@/views/sidebar";
-import { SiteHeader } from "@/views/dashboard/site-header";
-import { SidebarInset, SidebarProvider } from "@/components/ui/sidebar";
 import { defaultMetadata } from "@/constants";
+import { NextIntlClientProvider } from "next-intl";
+import { getMessages } from "next-intl/server";
 
 // Font configuration - Geist Sans (primary font)
 const geistSans = Geist({
@@ -80,36 +78,23 @@ export default async function RootLayout({
   // Validate locale - nếu không hợp lệ → 404 page
   if (!locales.includes(locale as Locale)) notFound();
 
+  // Get messages for the current locale
+  const messages = await getMessages();
+
   return (
     <html lang={locale} suppressHydrationWarning>
       <body
         suppressHydrationWarning // Bắt buộc cho next-themes (tránh hydration mismatch)
         className={`${geistSans.variable} ${geistMono.variable} antialiased`}
       >
-        {/* Theme Provider - Dark mode support */}
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
-          {/* Sidebar Provider - Quản lý sidebar state */}
-          <SidebarProvider
-            style={
-              {
-                "--sidebar-width": "calc(var(--spacing) * 72)", // 288px (72 * 4px)
-                "--header-height": "calc(var(--spacing) * 12)", // 48px (12 * 4px)
-              } as React.CSSProperties
-            }
-          >
-            {/* Global Sidebar - Hiển thị trên tất cả pages */}
-            <AppSidebar variant="inset" />
-
-            {/* Main Content Area */}
-            <SidebarInset>
-              {/* Global Header - Hiển thị trên tất cả pages */}
-              <SiteHeader />
-
-              {/* Page Content - Render từng page cụ thể */}
-              {children}
-            </SidebarInset>
-          </SidebarProvider>
-        </ThemeProvider>
+        {/* NextIntl Provider - i18n support */}
+        <NextIntlClientProvider messages={messages}>
+          {/* Theme Provider - Dark mode support */}
+          <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
+            {/* Page Content - Render từng page cụ thể */}
+            {children}
+          </ThemeProvider>
+        </NextIntlClientProvider>
 
         {/* Toast Notifications - Global */}
         <Toaster richColors position="top-right" />

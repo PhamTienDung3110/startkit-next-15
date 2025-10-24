@@ -62,9 +62,8 @@ export function NavMain({
     <SidebarGroup>
       <SidebarGroupContent className="flex flex-col gap-2">
         {/* Quick Action Buttons */}
-        <SidebarMenu>
+        {/* <SidebarMenu>
           <SidebarMenuItem className="flex items-center gap-2">
-            {/* Quick Create Button - Primary CTA */}
             <SidebarMenuButton
               tooltip="Quick Create"
               className="bg-primary text-primary-foreground hover:bg-primary/90 hover:text-primary-foreground active:bg-primary/90 active:text-primary-foreground min-w-8 duration-200 ease-linear"
@@ -73,7 +72,6 @@ export function NavMain({
               <span>Quick Create</span>
             </SidebarMenuButton>
 
-            {/* Inbox Button - Secondary action */}
             <Button
               size="icon"
               className="size-8 group-data-[collapsible=icon]:opacity-0"
@@ -83,7 +81,7 @@ export function NavMain({
               <span className="sr-only">Inbox</span>
             </Button>
           </SidebarMenuItem>
-        </SidebarMenu>
+        </SidebarMenu> */}
 
         {/* Main Navigation Items - với Collapsible sub-items */}
         <SidebarMenu>

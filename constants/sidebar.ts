@@ -92,9 +92,19 @@ export const sidebarData = {
       ],
     },
     {
-      title: "Lifecycle",
-      url: "#",
+      title: "Authentication",
+      url: "/(auth)",
       icon: IconListDetails,
+      items: [
+        {
+          title: "Login",
+          url: "/login", // TODO: Tạo page này
+        },
+        {
+          title: "Register",
+          url: "/register", // TODO: Tạo page này
+        },
+      ],
     },
     {
       title: "Analytics",

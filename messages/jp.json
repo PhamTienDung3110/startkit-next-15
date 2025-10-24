@@ -6,5 +6,54 @@
   "Dashboard": {
     "balance": "現在の残高",
     "transactions": "最近の取引"
+  },
+  "Auth": {
+    "login": {
+      "title": "おかえりなさい",
+      "subtitle": "続行するにはアカウントにサインインしてください",
+      "email": "メール",
+      "password": "パスワード",
+      "remember": "ログイン状態を保持",
+      "forgot": "パスワードを忘れましたか？",
+      "submit": "サインイン",
+      "social": "または以下で続行",
+      "noAccount": "アカウントをお持ちでないですか？",
+      "register": "サインアップ"
+    },
+    "register": {
+      "title": "アカウント作成",
+      "subtitle": "サービスを開始するためにサインアップしてください",
+      "name": "氏名",
+      "email": "メール",
+      "password": "パスワード",
+      "confirmPassword": "パスワード確認",
+      "passwordHint": "パスワードは8文字以上である必要があります",
+      "terms": "以下に同意します",
+      "termsLink": "利用規約",
+      "privacyLink": "プライバシーポリシー",
+      "submit": "アカウント作成",
+      "social": "または以下でサインアップ",
+      "hasAccount": "すでにアカウントをお持ちですか？",
+      "login": "サインイン"
+    }
+  },
+  "Common": {
+    "email": "メール",
+    "password": "パスワード",
+    "name": "氏名",
+    "submit": "送信",
+    "cancel": "キャンセル",
+    "save": "保存",
+    "edit": "編集",
+    "delete": "削除",
+    "confirm": "確認",
+    "loading": "読み込み中...",
+    "error": "エラーが発生しました",
+    "success": "成功",
+    "language": "言語",
+    "welcomeBack": "おかえりなさい",
+    "secureAccess": "エンタープライズグレードの保護でアカウントに安全にアクセス",
+    "joinCommunity": "コミュニティに参加",
+    "createAccount": "アカウントを作成して、今日から私たちと一緒に旅を始めましょう"
   }
 }

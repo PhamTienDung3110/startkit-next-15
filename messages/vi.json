@@ -6,5 +6,54 @@
   "Dashboard": {
     "balance": "Số dư hiện tại",
     "transactions": "Giao dịch gần đây"
+  },
+  "Auth": {
+    "login": {
+      "title": "Chào mừng trở lại",
+      "subtitle": "Đăng nhập vào tài khoản của bạn để tiếp tục",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "remember": "Ghi nhớ đăng nhập",
+      "forgot": "Quên mật khẩu?",
+      "submit": "Đăng nhập",
+      "social": "Hoặc tiếp tục với",
+      "noAccount": "Chưa có tài khoản?",
+      "register": "Đăng ký ngay"
+    },
+    "register": {
+      "title": "Tạo tài khoản",
+      "subtitle": "Đăng ký để bắt đầu sử dụng dịch vụ của chúng tôi",
+      "name": "Họ và tên",
+      "email": "Email",
+      "password": "Mật khẩu",
+      "confirmPassword": "Xác nhận mật khẩu",
+      "passwordHint": "Mật khẩu phải có ít nhất 8 ký tự",
+      "terms": "Tôi đồng ý với",
+      "termsLink": "Điều khoản sử dụng",
+      "privacyLink": "Chính sách bảo mật",
+      "submit": "Tạo tài khoản",
+      "social": "Hoặc đăng ký với",
+      "hasAccount": "Đã có tài khoản?",
+      "login": "Đăng nhập ngay"
+    }
+  },
+  "Common": {
+    "email": "Email",
+    "password": "Mật khẩu",
+    "name": "Họ và tên",
+    "submit": "Gửi",
+    "cancel": "Hủy",
+    "save": "Lưu",
+    "edit": "Chỉnh sửa",
+    "delete": "Xóa",
+    "confirm": "Xác nhận",
+    "loading": "Đang tải...",
+    "error": "Có lỗi xảy ra",
+    "success": "Thành công",
+    "language": "Ngôn ngữ",
+    "welcomeBack": "Chào mừng trở lại",
+    "secureAccess": "Truy cập an toàn vào tài khoản của bạn với bảo mật cấp doanh nghiệp",
+    "joinCommunity": "Tham gia cộng đồng",
+    "createAccount": "Tạo tài khoản và bắt đầu hành trình của bạn với chúng tôi ngay hôm nay"
   }
 }

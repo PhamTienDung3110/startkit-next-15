@@ -6,5 +6,54 @@
   "Dashboard": {
     "balance": "Current Balance",
     "transactions": "Recent Transactions"
+  },
+  "Auth": {
+    "login": {
+      "title": "Welcome back",
+      "subtitle": "Sign in to your account to continue",
+      "email": "Email",
+      "password": "Password",
+      "remember": "Remember me",
+      "forgot": "Forgot password?",
+      "submit": "Sign in",
+      "social": "Or continue with",
+      "noAccount": "Don't have an account?",
+      "register": "Sign up"
+    },
+    "register": {
+      "title": "Create account",
+      "subtitle": "Sign up to start using our service",
+      "name": "Full name",
+      "email": "Email",
+      "password": "Password",
+      "confirmPassword": "Confirm password",
+      "passwordHint": "Password must be at least 8 characters",
+      "terms": "I agree to the",
+      "termsLink": "Terms of Service",
+      "privacyLink": "Privacy Policy",
+      "submit": "Create account",
+      "social": "Or sign up with",
+      "hasAccount": "Already have an account?",
+      "login": "Sign in"
+    }
+  },
+  "Common": {
+    "email": "Email",
+    "password": "Password",
+    "name": "Full name",
+    "submit": "Submit",
+    "cancel": "Cancel",
+    "save": "Save",
+    "edit": "Edit",
+    "delete": "Delete",
+    "confirm": "Confirm",
+    "loading": "Loading...",
+    "error": "An error occurred",
+    "success": "Success",
+    "language": "Language",
+    "welcomeBack": "Welcome Back",
+    "secureAccess": "Secure access to your account with enterprise-grade protection",
+    "joinCommunity": "Join Our Community",
+    "createAccount": "Create your account and start your journey with us today"
   }
 }
