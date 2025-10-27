@@ -229,17 +229,6 @@ function Register() {
               priority
             />
             <div className="absolute inset-0 bg-black/30" />
-            <div className="relative z-10 flex items-center justify-center p-8">
-              <div className="space-y-6 text-center text-white">
-                <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full bg-white/20 backdrop-blur-sm">
-                  <User className="h-12 w-12 text-white" />
-                </div>
-                <div>
-                  <h3 className="mb-4 text-3xl font-bold">{tCommon("joinCommunity")}</h3>
-                  <p className="max-w-sm text-lg text-white/90">{tCommon("createAccount")}</p>
-                </div>
-              </div>
-            </div>
           </div>
         </div>
       </Card>
