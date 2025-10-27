@@ -1,28 +1,89 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { User, Mail, Lock, Eye, ArrowRight } from "lucide-react";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { User, Mail, Lock, Eye, EyeOff, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { getAuthPath } from "@/constants/paths";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { RegisterSchema, type RegisterValues, getPasswordStrength } from "@/lib/validators/auth";
+import { toast } from "sonner";
+import { getInputClasses, inputClasses } from "@/lib/utils/form";
 
 function Register() {
   const t = useTranslations("Auth.register");
-  const tCommon = useTranslations("Common");
   const locale = useLocale();
   const router = useRouter();
+  
+  // State cho password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // React Hook Form setup
+  const form = useForm<RegisterValues>({
+    resolver: zodResolver(RegisterSchema),
+    defaultValues: {
+      name: "",
+      email: "",
+      password: "",
+      confirmPassword: "",
+    },
+    mode: "onBlur", // Validate khi blur
+  });
+
+  // Watch password để hiển thị strength indicator
+  const password = form.watch("password");
+  const passwordStrength = password ? getPasswordStrength(password) : null;
 
   const switchLanguage = (newLocale: string) => {
     const newPath = getAuthPath("REGISTER", newLocale);
     router.push(newPath);
+  };
+
+  // Form submission handler
+  const onSubmit = async (values: RegisterValues) => {
+    setIsLoading(true);
+    
+    try {
+      // TODO: Replace với real API call
+      console.log("Register values:", values);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Success
+      toast.success("Đăng ký thành công!", {
+        description: "Chào mừng bạn đến với ứng dụng!",
+      });
+      
+      // Redirect to dashboard
+      router.push(`/${locale}/dashboard`);
+      
+    } catch {
+      // Error handling
+      toast.error("Đăng ký thất bại!", {
+        description: "Có lỗi xảy ra. Vui lòng thử lại sau.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,98 +127,199 @@ function Register() {
               </div>
 
               {/* Register Form */}
-              <form className="space-y-4">
-                {/* Full Name Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    {t("name")}
-                  </Label>
-                  <div className="relative">
-                    <User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                    <Input
-                      id="name"
-                      type="text"
-                      placeholder="Nguyễn Văn A"
-                      className="h-12 pl-10"
-                      required
-                    />
-                  </div>
-                </div>
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  {/* Full Name Field */}
+                  <FormField
+                    control={form.control}
+                    name="name"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("name")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <User className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <Input
+                              {...field}
+                              type="text"
+                              placeholder="Nguyễn Văn A"
+                              className={getInputClasses(
+                                inputClasses.withIcon,
+                                form.formState.errors.name
+                              )}
+                              data-testid="name-input"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage data-testid="name-error" />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    {t("email")}
-                  </Label>
-                  <div className="relative">
-                    <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      className="h-12 pl-10"
-                      required
-                    />
-                  </div>
-                </div>
+                  {/* Email Field */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("email")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="your@email.com"
+                              className={getInputClasses(
+                                inputClasses.withIcon,
+                                form.formState.errors.email
+                              )}
+                              data-testid="email-input"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage data-testid="email-error" />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="password" className="text-sm font-medium">
-                    {t("password")}
-                  </Label>
-                  <div className="relative">
-                    <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="h-12 pr-10 pl-10"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-0 right-0 h-12 px-3 hover:bg-transparent"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                  <div className="text-muted-foreground text-xs">{t("passwordHint")}</div>
-                </div>
+                  {/* Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("password")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              className={getInputClasses(
+                                inputClasses.withToggle,
+                                form.formState.errors.password
+                              )}
+                              data-testid="password-input"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-0 right-0 h-12 px-3 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                              data-testid="password-toggle"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage data-testid="password-error" />
+                        
+                        {/* Password Strength Indicator */}
+                        {password && passwordStrength && (
+                          <div className="space-y-2">
+                            <div className="flex items-center gap-2">
+                              <div className="flex-1 bg-muted rounded-full h-2">
+                                <div
+                                  className={`h-2 rounded-full transition-all duration-300 ${
+                                    passwordStrength.score <= 2
+                                      ? "bg-red-500"
+                                      : passwordStrength.score <= 4
+                                      ? "bg-yellow-500"
+                                      : "bg-green-500"
+                                  }`}
+                                  style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
+                                />
+                              </div>
+                              <span className={`text-xs font-medium ${passwordStrength.color}`}>
+                                {passwordStrength.label}
+                              </span>
+                            </div>
+                            <div className="text-muted-foreground text-xs">
+                              {t("passwordHint")}
+                            </div>
+                          </div>
+                        )}
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Confirm Password Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="confirm-password" className="text-sm font-medium">
-                    {t("confirmPassword")}
-                  </Label>
-                  <div className="relative">
-                    <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                    <Input
-                      id="confirm-password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="h-12 pr-10 pl-10"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-0 right-0 h-12 px-3 hover:bg-transparent"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
+                  {/* Confirm Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="confirmPassword"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("confirmPassword")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <Input
+                              {...field}
+                              type={showConfirmPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              className={getInputClasses(
+                                inputClasses.withToggle,
+                                form.formState.errors.confirmPassword
+                              )}
+                              data-testid="confirm-password-input"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-0 right-0 h-12 px-3 hover:bg-transparent"
+                              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+                              data-testid="confirm-password-toggle"
+                            >
+                              {showConfirmPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage data-testid="confirm-password-error" />
+                      </FormItem>
+                    )}
+                  />
 
-                {/* Submit Button */}
-                <Button type="submit" className="h-12 w-full text-base font-medium">
-                  {t("submit")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </form>
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    className="h-12 w-full text-base font-medium"
+                    disabled={isLoading}
+                    data-testid="register-button"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang đăng ký...
+                      </>
+                    ) : (
+                      <>
+                        {t("submit")}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
               {/* Divider */}
               <div className="relative my-6">

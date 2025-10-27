@@ -1,28 +1,84 @@
 "use client";
 
-import React from "react";
+import React, { useState } from "react";
 import Link from "next/link";
 import Image from "next/image";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Separator } from "@/components/ui/separator";
-import { Eye, Mail, Lock, ArrowRight } from "lucide-react";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Form,
+  FormControl,
+  FormField,
+  FormItem,
+  FormLabel,
+  FormMessage,
+} from "@/components/ui/form";
+import { Eye, EyeOff, Mail, Lock, ArrowRight, Loader2 } from "lucide-react";
 import { useTranslations } from "next-intl";
 import { useLocale } from "next-intl";
 import { useRouter } from "next/navigation";
 import { getAuthPath } from "@/constants/paths";
+import { useForm } from "react-hook-form";
+import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginSchema, type LoginValues } from "@/lib/validators/auth";
+import { toast } from "sonner";
+import { getInputClasses, inputClasses } from "@/lib/utils/form";
 
 function Login() {
   const t = useTranslations("Auth.login");
-  const tCommon = useTranslations("Common");
   const locale = useLocale();
   const router = useRouter();
+  
+  // State cho password visibility
+  const [showPassword, setShowPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
+
+  // React Hook Form setup
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: {
+      email: "",
+      password: "",
+      remember: false,
+    },
+    mode: "onBlur", // Validate khi blur
+  });
 
   const switchLanguage = (newLocale: string) => {
     const newPath = getAuthPath("LOGIN", newLocale);
     router.push(newPath);
+  };
+
+  // Form submission handler
+  const onSubmit = async (values: LoginValues) => {
+    setIsLoading(true);
+    
+    try {
+      // TODO: Replace với real API call
+      console.log("Login values:", values);
+      
+      // Simulate API call
+      await new Promise(resolve => setTimeout(resolve, 2000));
+      
+      // Success
+      toast.success("Đăng nhập thành công!", {
+        description: "Chào mừng bạn quay trở lại!",
+      });
+      
+      // Redirect to dashboard
+      router.push(`/${locale}/dashboard`);
+      
+    } catch {
+      // Error handling
+      toast.error("Đăng nhập thất bại!", {
+        description: "Email hoặc mật khẩu không đúng. Vui lòng thử lại.",
+      });
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -66,75 +122,131 @@ function Login() {
               </div>
 
               {/* Login Form */}
-              <form className="space-y-4">
-                {/* Email Field */}
-                <div className="space-y-2">
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    {t("email")}
-                  </Label>
-                  <div className="relative">
-                    <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="your@email.com"
-                      className="h-12 pl-10"
-                      required
-                    />
-                  </div>
-                </div>
-
-                {/* Password Field */}
-                <div className="space-y-2">
-                  <div className="flex items-center justify-between">
-                    <Label htmlFor="password" className="text-sm font-medium">
-                      {t("password")}
-                    </Label>
-                    <Link
-                      href={getAuthPath("FORGOT_PASSWORD", locale)}
-                      className="text-primary text-sm hover:underline"
-                    >
-                      {t("forgot")}
-                    </Link>
-                  </div>
-                  <div className="relative">
-                    <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
-                    <Input
-                      id="password"
-                      type="password"
-                      placeholder="••••••••"
-                      className="h-12 pr-10 pl-10"
-                      required
-                    />
-                    <Button
-                      type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute top-0 right-0 h-12 px-3 hover:bg-transparent"
-                    >
-                      <Eye className="h-4 w-4" />
-                    </Button>
-                  </div>
-                </div>
-
-                {/* Remember */}
-                <div className="flex items-center space-x-2">
-                  <input
-                    id="remember"
-                    type="checkbox"
-                    className="text-primary focus:ring-primary h-4 w-4 rounded border-gray-300"
+              <Form {...form}>
+                <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                  {/* Email Field */}
+                  <FormField
+                    control={form.control}
+                    name="email"
+                    render={({ field }) => (
+                      <FormItem>
+                        <FormLabel className="text-sm font-medium">
+                          {t("email")}
+                        </FormLabel>
+                        <FormControl>
+                          <div className="relative">
+                            <Mail className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <Input
+                              {...field}
+                              type="email"
+                              placeholder="your@email.com"
+                              className={getInputClasses(
+                                inputClasses.withIcon,
+                                form.formState.errors.email
+                              )}
+                              data-testid="email-input"
+                            />
+                          </div>
+                        </FormControl>
+                        <FormMessage data-testid="email-error" />
+                      </FormItem>
+                    )}
                   />
-                  <Label htmlFor="remember" className="text-muted-foreground text-sm">
-                    {t("remember")}
-                  </Label>
-                </div>
 
-                {/* Submit Button */}
-                <Button type="submit" className="h-12 w-full text-base font-medium">
-                  {t("submit")}
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-              </form>
+                  {/* Password Field */}
+                  <FormField
+                    control={form.control}
+                    name="password"
+                    render={({ field }) => (
+                      <FormItem>
+                        <div className="flex items-center justify-between">
+                          <FormLabel className="text-sm font-medium">
+                            {t("password")}
+                          </FormLabel>
+                          <Link
+                            href={getAuthPath("FORGOT_PASSWORD", locale)}
+                            className="text-primary text-sm hover:underline"
+                          >
+                            {t("forgot")}
+                          </Link>
+                        </div>
+                        <FormControl>
+                          <div className="relative">
+                            <Lock className="text-muted-foreground absolute top-1/2 left-3 h-4 w-4 -translate-y-1/2 transform" />
+                            <Input
+                              {...field}
+                              type={showPassword ? "text" : "password"}
+                              placeholder="••••••••"
+                              className={getInputClasses(
+                                inputClasses.withToggle,
+                                form.formState.errors.password
+                              )}
+                              data-testid="password-input"
+                            />
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              className="absolute top-0 right-0 h-12 px-3 hover:bg-transparent"
+                              onClick={() => setShowPassword(!showPassword)}
+                              data-testid="password-toggle"
+                            >
+                              {showPassword ? (
+                                <EyeOff className="h-4 w-4" />
+                              ) : (
+                                <Eye className="h-4 w-4" />
+                              )}
+                            </Button>
+                          </div>
+                        </FormControl>
+                        <FormMessage data-testid="password-error" />
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Remember Me */}
+                  <FormField
+                    control={form.control}
+                    name="remember"
+                    render={({ field }) => (
+                      <FormItem className="flex flex-row items-start space-x-3 space-y-0">
+                        <FormControl>
+                          <Checkbox
+                            checked={field.value}
+                            onCheckedChange={field.onChange}
+                            data-testid="remember-checkbox"
+                          />
+                        </FormControl>
+                        <div className="space-y-1 leading-none">
+                          <FormLabel className="text-muted-foreground text-sm">
+                            {t("remember")}
+                          </FormLabel>
+                        </div>
+                      </FormItem>
+                    )}
+                  />
+
+                  {/* Submit Button */}
+                  <Button 
+                    type="submit" 
+                    className="h-12 w-full text-base font-medium"
+                    disabled={isLoading}
+                    data-testid="login-button"
+                  >
+                    {isLoading ? (
+                      <>
+                        <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                        Đang đăng nhập...
+                      </>
+                    ) : (
+                      <>
+                        {t("submit")}
+                        <ArrowRight className="ml-2 h-4 w-4" />
+                      </>
+                    )}
+                  </Button>
+                </form>
+              </Form>
 
               {/* Divider */}
               <div className="relative my-6">

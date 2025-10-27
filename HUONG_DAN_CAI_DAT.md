@@ -209,58 +209,158 @@ export function ThemeToggle() {
 
 ### 4. Forms với React Hook Form + Zod
 
-**Schema:**
+**Cấu trúc Validators:**
 
-```tsx
-// lib/validators/profile.ts
-import { z } from "zod";
-export const ProfileSchema = z.object({
-  name: z.string().min(2, "Tên phải có ít nhất 2 ký tự"),
-  email: z.string().email("Email không hợp lệ"),
-});
-export type ProfileValues = z.infer<typeof ProfileSchema>;
+```plaintext
+lib/validators/
+├── auth/                    # Authentication validators
+│   ├── index.ts            # Barrel export
+│   ├── login.ts            # Login form validation
+│   ├── register.ts         # Register form validation
+│   └── password.ts         # Password utilities & schemas
+├── profile.ts              # Profile form validation
+└── utils/
+    └── form.ts             # Form utilities (error styling, etc.)
 ```
 
-**Form:**
+**Auth Schemas:**
+
+```tsx
+// lib/validators/auth/login.ts
+import { z } from "zod";
+
+export const LoginSchema = z.object({
+  email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
+  password: z.string().min(1, "Mật khẩu là bắt buộc").min(6, "Mật khẩu phải có ít nhất 6 ký tự"),
+  remember: z.boolean().optional().default(false),
+});
+
+export type LoginValues = z.infer<typeof LoginSchema>;
+```
+
+```tsx
+// lib/validators/auth/register.ts
+export const RegisterSchema = z.object({
+  name: z.string().min(1, "Họ tên là bắt buộc").min(2, "Họ tên phải có ít nhất 2 ký tự"),
+  email: z.string().min(1, "Email là bắt buộc").email("Email không hợp lệ"),
+  password: z.string().min(8, "Mật khẩu phải có ít nhất 8 ký tự")
+    .regex(/^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)/, "Mật khẩu phải chứa ít nhất 1 chữ thường, 1 chữ hoa và 1 số"),
+  confirmPassword: z.string().min(1, "Xác nhận mật khẩu là bắt buộc"),
+}).refine((data) => data.password === data.confirmPassword, {
+  message: "Mật khẩu xác nhận không khớp",
+  path: ["confirmPassword"],
+});
+```
+
+**Form Utilities:**
+
+```tsx
+// lib/utils/form.ts
+import { FieldError } from "react-hook-form";
+
+export const getInputClasses = (
+  baseClasses: string,
+  error?: FieldError,
+  errorClasses: string = "border-red-500 focus:border-red-500 focus:ring-red-500"
+): string => {
+  return `${baseClasses} ${error ? errorClasses : ""}`.trim();
+};
+
+export const inputClasses = {
+  base: "h-12",
+  withIcon: "h-12 pl-10",
+  withToggle: "h-12 pr-10 pl-10",
+  error: "border-red-500 focus:border-red-500 focus:ring-red-500",
+} as const;
+```
+
+**Form Implementation:**
 
 ```tsx
 "use client";
 import { useForm } from "react-hook-form";
 import { zodResolver } from "@hookform/resolvers/zod";
+import { LoginSchema, type LoginValues } from "@/lib/validators/auth";
+import { getInputClasses, inputClasses } from "@/lib/utils/form";
 
-export function DemoForm() {
-  const form = useForm<ProfileValues>({
-    resolver: zodResolver(ProfileSchema),
+export function LoginForm() {
+  const form = useForm<LoginValues>({
+    resolver: zodResolver(LoginSchema),
+    defaultValues: { email: "", password: "", remember: false },
     mode: "onBlur",
-    defaultValues: { name: "", email: "" },
   });
 
-  async function onSubmit(values: ProfileValues) {
+  const onSubmit = async (values: LoginValues) => {
+    // Handle form submission
     console.log(values);
-  }
+  };
 
   return (
     <Form {...form}>
       <form onSubmit={form.handleSubmit(onSubmit)}>
         <FormField
           control={form.control}
-          name="name"
+          name="email"
           render={({ field }) => (
             <FormItem>
-              <FormLabel>Tên</FormLabel>
+              <FormLabel>Email</FormLabel>
               <FormControl>
-                <Input {...field} />
+                <Input
+                  {...field}
+                  type="email"
+                  className={getInputClasses(
+                    inputClasses.withIcon,
+                    form.formState.errors.email
+                  )}
+                />
               </FormControl>
               <FormMessage />
             </FormItem>
           )}
         />
-        <Button type="submit">Lưu</Button>
+        <Button type="submit">Submit</Button>
       </form>
     </Form>
   );
 }
 ```
+
+**Password Strength Indicator:**
+
+```tsx
+import { getPasswordStrength } from "@/lib/validators/auth";
+
+const password = form.watch("password");
+const passwordStrength = password ? getPasswordStrength(password) : null;
+
+{passwordStrength && (
+  <div className="flex items-center gap-2">
+    <div className="flex-1 bg-muted rounded-full h-2">
+      <div
+        className={`h-2 rounded-full ${
+          passwordStrength.score <= 2 ? "bg-red-500" :
+          passwordStrength.score <= 4 ? "bg-yellow-500" : "bg-green-500"
+        }`}
+        style={{ width: `${(passwordStrength.score / 6) * 100}%` }}
+      />
+    </div>
+    <span className={`text-xs ${passwordStrength.color}`}>
+      {passwordStrength.label}
+    </span>
+  </div>
+)}
+```
+
+**Features:**
+- ✅ **Type-safe**: Full TypeScript support với inferred types
+- ✅ **Real-time validation**: Validate on blur, submit
+- ✅ **Custom error messages**: Vietnamese error messages
+- ✅ **Error styling**: Input border đỏ khi có lỗi
+- ✅ **Password strength**: Visual strength indicator
+- ✅ **Form state management**: Loading, error states
+- ✅ **Password visibility toggle**: Show/hide password
+- ✅ **Toast notifications**: Success/error feedback
+- ✅ **Test-friendly**: data-testid attributes
 
 ### 5. Internationalization (i18n) với next-intl
 
@@ -929,6 +1029,142 @@ npx tsc --noEmit
 npm run lint:fix
 ```
 
+### 13. Testing với Playwright
+
+**Cài đặt:**
+
+```bash
+npm install -D @playwright/test
+npx playwright install
+```
+
+**Configuration (`playwright.config.ts`):**
+
+```typescript
+import { defineConfig, devices } from '@playwright/test';
+
+export default defineConfig({
+  testDir: './tests/e2e',
+  timeout: 30 * 1000,
+  retries: process.env.CI ? 2 : 0,
+  workers: process.env.CI ? 1 : undefined,
+  reporter: [['html'], ['json', { outputFile: 'test-results/results.json' }]],
+  
+  use: {
+    baseURL: process.env.PLAYWRIGHT_BASE_URL || 'http://localhost:3000',
+    trace: 'on-first-retry',
+    screenshot: 'only-on-failure',
+    video: 'retain-on-failure',
+    viewport: { width: 1280, height: 720 },
+  },
+
+  projects: [
+    { name: 'chromium', use: { ...devices['Desktop Chrome'] } },
+    { name: 'firefox', use: { ...devices['Desktop Firefox'] } },
+    { name: 'webkit', use: { ...devices['Desktop Safari'] } },
+    { name: 'Mobile Chrome', use: { ...devices['Pixel 5'] } },
+    { name: 'Mobile Safari', use: { ...devices['iPhone 12'] } },
+  ],
+
+  webServer: {
+    command: 'npm run dev',
+    url: 'http://localhost:3000',
+    reuseExistingServer: !process.env.CI,
+  },
+});
+```
+
+**Test Examples:**
+
+```typescript
+// tests/e2e/auth.spec.ts
+import { test, expect } from '@playwright/test';
+
+test.describe('Authentication', () => {
+  test('should login successfully', async ({ page }) => {
+    await page.goto('/vi/login');
+    
+    await page.fill('[data-testid="email-input"]', 'test@example.com');
+    await page.fill('[data-testid="password-input"]', 'password123');
+    await page.click('[data-testid="login-button"]');
+    
+    await expect(page).toHaveURL(/.*dashboard/);
+  });
+
+  test('should show validation errors', async ({ page }) => {
+    await page.goto('/vi/login');
+    
+    await page.click('[data-testid="login-button"]');
+    
+    await expect(page.locator('[data-testid="email-error"]')).toBeVisible();
+    await expect(page.locator('[data-testid="password-error"]')).toBeVisible();
+  });
+});
+```
+
+**Scripts:**
+
+```json
+{
+  "scripts": {
+    "test:e2e": "playwright test",
+    "test:e2e:ui": "playwright test --ui",
+    "test:e2e:headed": "playwright test --headed",
+    "test:e2e:report": "playwright show-report"
+  }
+}
+```
+
+### 14. Best Practices
+
+**✅ Do's:**
+- **Use TypeScript strict mode**: Enable strict type checking
+- **Modular structure**: Organize code by features, not file types
+- **Consistent naming**: Use descriptive names for components, functions
+- **Error boundaries**: Implement proper error handling
+- **Accessibility**: Add proper ARIA attributes, semantic HTML
+- **Performance**: Use React.memo, useMemo, useCallback when needed
+- **SEO**: Use Server Components for public pages
+- **Testing**: Add data-testid attributes for E2E testing
+
+**❌ Don'ts:**
+- **Don't mix concerns**: Keep auth, profile, etc. separate
+- **Don't skip validation**: Always validate user input
+- **Don't hardcode strings**: Use i18n for all user-facing text
+- **Don't ignore TypeScript errors**: Fix all type issues
+- **Don't use client components unnecessarily**: Prefer Server Components
+- **Don't forget error handling**: Always handle async operations
+- **Don't skip accessibility**: Make apps usable for everyone
+
+**Code Organization:**
+
+```plaintext
+components/
+├── ui/                    # Reusable UI components
+├── forms/                 # Form-specific components
+├── layouts/              # Layout components
+└── providers/            # Context providers
+
+lib/
+├── validators/           # Zod schemas
+│   ├── auth/            # Auth-related validators
+│   └── profile.ts       # Profile validators
+├── utils/               # Utility functions
+│   ├── form.ts         # Form utilities
+│   └── cn.ts           # Class name utilities
+└── api/                # API utilities
+    └── client.ts       # HTTP client
+
+stores/                 # Zustand stores
+├── ui-store.ts        # UI state
+├── user-store.ts      # User state
+└── index.ts          # Barrel export
+
+views/                 # Complex page components
+├── dashboard/         # Dashboard views
+└── sidebar/          # Sidebar components
+```
+
 ---
 
 ## 📚 Tài liệu tham khảo
@@ -959,19 +1195,27 @@ npm run lint:fix
 
 ## 📝 Notes
 
-- ✅ App Router (Next.js 15), không phải Pages Router
-- ✅ Tailwind v4 với `@import "tailwindcss"`
-- ✅ TypeScript strict mode với path aliases `@/*`
-- ✅ `suppressHydrationWarning` bắt buộc cho next-themes
-- ✅ ESLint max warnings = 0
-- ✅ shadcn/ui copy components, không install từ npm
+- ✅ **App Router** (Next.js 15), không phải Pages Router
+- ✅ **Tailwind v4** với `@import "tailwindcss"`
+- ✅ **TypeScript strict mode** với path aliases `@/*`
+- ✅ **next-themes** với `suppressHydrationWarning`
+- ✅ **ESLint max warnings = 0**
+- ✅ **shadcn/ui** copy components, không install từ npm
 - ✅ **next-intl** - i18n với App Router, hỗ trợ 3 ngôn ngữ (vi, en, jp)
 - ✅ **Locale routing** - URL format: `/vi/*`, `/en/*`, `/jp/*`
 - ✅ **Sidebar** - shadcn/ui sidebar với collapsible sub-items (font 15px)
 - ✅ **Constants** - Centralized data trong `constants/`
 - ✅ **Zustand** - State management cho non-SEO pages (Dashboard/Admin)
 - ✅ **Clean Architecture** - Tách biệt views/sidebar & views/dashboard
+- ✅ **React Hook Form + Zod** - Form validation với error styling
+- ✅ **Playwright** - E2E testing với multi-browser support
+- ✅ **Form Utilities** - Reusable error styling và validation helpers
+- ✅ **Modular Validators** - Auth schemas tách riêng từng file
+- ✅ **Error Styling** - Input border đỏ khi validation fails
+- ✅ **Password Strength** - Visual strength indicator
+- ✅ **Toast Notifications** - Success/error feedback
+- ✅ **Test-friendly** - data-testid attributes cho E2E testing
 - ✅ Xem demo: `npm run dev` → `http://localhost:3000/vi` hoặc `/en`, `/jp`
 
-**Version:** 1.3.0  
+**Version:** 2.0.0  
 **Last Updated:** 2025-01-23
